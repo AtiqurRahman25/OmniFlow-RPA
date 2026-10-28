@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OmniFlow Request Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; background: #f4f7f6; }
+        .form-container { background: white; padding: 30px; border-radius: 8px; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Automation Request Form</h2>
+        <form id="autoForm">
+            <label>Client Name:</label>
+            <input type="text" id="clientName" value="Jane Doe" required>
+
+            <label>Company Name:</label>
+            <input type="text" id="companyName" value="Globex Corp" required>
+
+            <label>Target Website URL:</label>
+            <input type="text" id="targetWebsiteUrl" value="https://example.com" required>
+
+            <label>Notification Email:</label>
+            <input type="email" id="notificationEmail" value="jane@example.com" required>
+
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('autoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const payload = {
+                requestId: "REQ-" + Math.floor(Math.random() * 10000),
+                clientName: document.getElementById('clientName').value,
+                companyName: document.getElementById('companyName').value,
+                targetWebsiteUrl: document.getElementById('targetWebsiteUrl').value,
+                actionType: "ExtractData",
+                notificationEmail: document.getElementById('notificationEmail').value
+            };
+
+            // Replace this URL with local n8n Webhook Test URL
+            const webhookUrl = 'http://localhost:5678/webhook-test/your-unique-webhook-path';
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(response.ok) {
+                    alert('Success! Request sent to n8n.');
+                } else {
+                    alert('Error sending data.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to connect to n8n webhook.');
+            }
+        });
+    </script>
+</body>
+</html>
