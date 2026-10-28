@@ -47,7 +47,7 @@ RPA Engineer - DataFort Ltd. -->
                 notificationEmail: document.getElementById('notificationEmail').value
             };
 
-            // Replace this URL with local n8n Webhook Test URL
+            // local n8n Webhook URL - POST
             const webhookUrl = 'http://localhost:5678/webhook-test/9524b752-abaa-49f1-8c2a-0d02fe95b3e0';
 
             try {
@@ -57,9 +57,9 @@ RPA Engineer - DataFort Ltd. -->
                     body: JSON.stringify(payload)
                 });
                 if(response.ok) {
-                    alert('Success! Request sent to n8n.');
+                    alert('Success! Now you can close this tab.');
                 } else {
-                    alert('Error sending data.');
+                    alert('Error, Please try again later.');
                 }
             } catch (error) {
                 console.error('Error:', error);
