@@ -1,42 +1,220 @@
 <!-- Md. Atiqur Rahman Sifat
 RPA Engineer - DataFort Ltd. -->
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OmniFlow Request Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniFlow | Automation Request</title>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 50px; background: #f4f7f6; }
-        .form-container { background: white; padding: 30px; border-radius: 8px; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0056b3; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #e8f0ff, #f4f7fc, #e9f4ff);
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(31, 56, 100, 0.12);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            font-size: 27px;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #172554;
+            font-size: 25px;
+            font-weight: 700;
+            margin-bottom: 9px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 21px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #dbe3ef;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+        }
+
+        input::placeholder {
+            color: #a0aec0;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.10);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37,99,235,0.25);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 28px 22px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+        }
     </style>
 </head>
+
 <body>
+
     <div class="form-container">
-        <h2>Automation Request Form</h2>
+
+        <div class="form-header">
+            <div class="logo">O</div>
+            <h2>Automation Request</h2>
+            <p class="subtitle">
+                Submit details and let OmniFlow handle the rest.
+            </p>
+        </div>
+
         <form id="autoForm">
-            <label>Client Name:</label>
-            <input type="text" id="clientName" placeholder="Jane Doe" required>
 
-            <label>Company Name:</label>
-            <input type="text" id="companyName" placeholder="Globex Corp" required>
+            <div class="form-group">
+                <label for="clientName">Client Name</label>
+                <input
+                    type="text"
+                    id="clientName"
+                    placeholder="Enter your full name"
+                    required>
+            </div>
 
-            <label>Target Website URL:</label>
-            <input type="text" id="targetWebsiteUrl" placeholder="https://example.com" required>
+            <div class="form-group">
+                <label for="companyName">Company Name</label>
+                <input
+                    type="text"
+                    id="companyName"
+                    placeholder="Enter your company name"
+                    required>
+            </div>
 
-            <label>Notification Email:</label>
-            <input type="email" id="notificationEmail" placeholder="jane@example.com" required>
+            <div class="form-group">
+                <label for="targetWebsiteUrl">Target Website URL</label>
+                <input
+                    type="url"
+                    id="targetWebsiteUrl"
+                    placeholder="https://example.com"
+                    required>
+            </div>
 
-            <button type="submit">Submit Request</button>
+            <div class="form-group">
+                <label for="notificationEmail">Notification Email</label>
+                <input
+                    type="email"
+                    id="notificationEmail"
+                    placeholder="you@example.com"
+                    required>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                Submit Request →
+            </button>
+
         </form>
+
+        <div class="footer">
+            Powered by OmniFlow Automation
+        </div>
+
     </div>
 
     <script>
         document.getElementById('autoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
 
             const payload = {
                 requestId: "REQ-" + Math.floor(Math.random() * 10000),
@@ -47,25 +225,34 @@ RPA Engineer - DataFort Ltd. -->
                 notificationEmail: document.getElementById('notificationEmail').value
             };
 
-            // local n8n Webhook URL - POST
+            // n8n Webhook URL - POST
             const webhookUrl = 'http://localhost:5678/webhook-test/9524b752-abaa-49f1-8c2a-0d02fe95b3e0';
 
             try {
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
-                if(response.ok) {
-                    alert('Success! Now you can close this tab.');
+
+                if (response.ok) {
+                    alert('Success! Your automation request has been submitted.');
+                    document.getElementById('autoForm').reset();
                 } else {
-                    alert('Error, Please try again later.');
+                    alert('Error! Please try again later.');
                 }
+
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to connect to n8n webhook.');
+                alert("We're currently in hibernation mode. We'll respond back to you shortly.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Request →';
             }
         });
     </script>
+
 </body>
 </html>
