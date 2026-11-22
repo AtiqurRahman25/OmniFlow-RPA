@@ -1,5 +1,12 @@
 # Email Trigger Configuration
 
+## Process 1: Responsible Person
+
+**Responsible Person:** Mr. Nafiz Imtiaz
+
+**LinkedIn:** [Nafiz Imtiaz](https://www.linkedin.com/in/nafiz-imtiaz-mba-aust/)
+
+
 ## Current Status
 Currently, the workflow uses a **Gmail Trigger** to monitor incoming emails.
 
