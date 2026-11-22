@@ -1,0 +1,318 @@
+{
+  "name": "Apex - Process01",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        192
+      ],
+      "id": "0aa1f8e0-ed8e-4280-8c6f-eba013206f3d",
+      "name": "Microsoft Outlook Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeDrafts": true
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        256
+      ],
+      "id": "b2db32f8-f5a1-4ba1-9444-4542d8c4bbda",
+      "name": "Gmail Trigger",
+      "notesInFlow": false,
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9bBP3Siz2Epx7sUr",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        64
+      ],
+      "id": "f3a8f791-385c-4e48-a0aa-3cb1cab6ab86",
+      "name": "Mark as read",
+      "webhookId": "7c5e9c29-531e-4873-8938-44a475bb274f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9bBP3Siz2Epx7sUr",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email Subject:{{ $('Gmail Trigger').item.json.headers.subject }}\nEmail Body:{{ $('Gmail Trigger').item.json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert Trade Finance AI Document Extraction Assistant specializing in parsing SWIFT MT700 (Issue of a Documentary Credit) messages and trade documents. \n\nYour task is to extract exact key-value data fields requested by the user from the provided raw document text. \n\n### Extraction Mapping Rules for Target Fields:\n1. **PO Date (Purchase Order Date):** Look inside field :47A (Additional Conditions) or narrative text for the Purchase Order date tied to the PO number (e.g., look for mentions near PO number A97129). If not explicitly stated as a date, look for related contract/proforma dates or return \"Not Specified\".\n2. **PI Number (Proforma Invoice Number):** Found in field :45A under \"BENEFICIARY'S PROFORMA INVOICE NO.:\" (e.g., 31002221).\n3. **PI Date (Proforma Invoice Date):** Found adjacent to the Proforma Invoice Number in field :45A (e.g., 07-11-2026).\n4. **Quantity/QTY:** Found in field :45A (e.g., 2700 SQ.FT) and field :47A for tolerances if applicable. Extract the primary quantity value and unit.\n5. **Documentary Credit Number:** Found in field :20 (e.g., 147526230484).\n6. **Date of Issue:** Found in field :31C formatted as YYMMDD (e.g., 261109 -> November 9, 2026).\n7. **Latest Date of Shipment:** Found in field :44C formatted as YYMMDD (e.g., 270115 -> January 15, 2027).\n8. **Cover Note No. (Insurance Cover Note Number):** Found in field :46A under document clause 8 (e.g., PIONEER/HO/MC-16359/11/2026).\n9. **Cover Note Date:** Found adjacent to the Cover Note Number in field :46A clause 8 (e.g., 08-11-2026).\n10. **Partial Shipment:** Found in field :43P. Extract the explicit status as stated (e.g., \"ALLOWED\" or \"NOT ALLOWED\").\n11. **Port of Discharge:** Found in field :44F (e.g., DHAKA AIRPORT, BANGLADESH).\n12. **HS Code:** Found in field :47A clause 2 or field :46A clauses (e.g., 4113.10.00).\n\n### Output Guidelines:\n- Return the extracted information cleanly and structured as a JSON object.\n- If a field cannot be found in the text, set its value to null or \"Not Specified\".\n- Do not hallucinate or guess values; rely strictly on the provided text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        256
+      ],
+      "id": "88315a2b-0799-46c1-bb31-0e0cceb5859e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        464
+      ],
+      "id": "f08958dc-0cb4-4740-8674-ed29cdd5085a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $('Gmail Trigger').all();\nconst outputItems = [];\n\nfor (const item of items) {\n  if (item.binary) {\n    for (const key of Object.keys(item.binary)) {\n      const binaryData = item.binary[key];\n      const mimeType = binaryData.mimeType || '';\n      const fileName = (binaryData.fileName || key).toLowerCase();\n\n      // Skip if the file is an image (e.g., jpeg, png, etc.)\n      if (mimeType.startsWith('image/') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) {\n        continue; // Skip this iteration and do not pass it to outputItems\n      }\n\n      outputItems.push({\n        json: {\n          fileName: binaryData.fileName || key,\n          mimeType: binaryData.mimeType,\n        },\n        binary: {\n          data: binaryData\n        }\n      });\n    }\n  }\n}\n\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        256
+      ],
+      "id": "f80ce522-9ce5-4c07-9daa-bf6c966e032a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "D:\\DHL\\Samples\\Samples\\TDS\\Output\\Apex - MasterTable.xlsx",
+        "dataPropertyName": "=data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        256
+      ],
+      "id": "1507fdcf-86e1-4e8d-a789-c20d87bbe20c",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "const newItems = [];\n\nfor (const item of $input.all()) {\n  let rawOutput = item.json.output || '';\n  \n  // Clean markdown code blocks\n  let cleanString = rawOutput.replace(/```json/g, '').replace(/```/g, '').trim();\n  \n  // Parse into actual JSON object\n  let parsedData = JSON.parse(cleanString);\n  let jsonStringFormatted = JSON.stringify(parsedData, null, 2);\n\n  // Push the parsed data directly to json AND package as binary for the file writer\n  newItems.push({\n    json: parsedData, // This ensures your spreadsheet/file nodes see the actual extracted fields!\n    binary: {\n      data: {\n        data: Buffer.from(jsonStringFormatted).toString('base64'),\n        mimeType: 'application/json',\n        fileName: 'extracted_lc_data.json',\n      }\n    }\n  });\n}\n\nreturn newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        352
+      ],
+      "id": "47b8850c-87c6-45ea-9fdd-2b21d829af07",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        256
+      ],
+      "id": "c696cd9d-5187-4a18-957a-7807b27be886",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "content": "### Apex - Process 01\n",
+        "height": 192,
+        "width": 160,
+        "color": "#35AC88"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "1e8e8adc-0572-4ce0-ac52-292663a5df78",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Will be attached when the credentials (e.g., Azure) will be provided\n",
+        "height": 320,
+        "color": "#E45349"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "3dfa0dcd-6f7b-4713-bcca-7436bc118753",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Apex Footwear 3 Processes\n\nThis is explicitly for process 1\nPrepared By: Md. Atiqur Rahman Sifat",
+        "height": 128,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "46cb9539-f8d2-4be1-997b-f22a87141e21",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mark as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as read": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b07631d7-960f-4edb-aa66-d6d578dcc6bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d48cdbf5fc6683b824f87e10d32d2e80c4234d288f6b184480f16c15aba68ced"
+  },
+  "nodeGroups": [],
+  "id": "Cuqkv8kLO94hSWRd",
+  "tags": []
+}
