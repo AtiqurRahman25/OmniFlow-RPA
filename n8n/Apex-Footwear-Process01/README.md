@@ -20,15 +20,10 @@ Incoming emails will be filtered based on the sender's email domain. Only emails
 - Emails from the four specified bank domains will be accepted and processed.
 - Emails from all other domains will be ignored.
 
-## Implementation Status
-- [x] Gmail Trigger configured (temporary).
-- [ ] Outlook credentials received.
-- [ ] Outlook Trigger configured.
-- [ ] Bank domain-based email filtering implemented and tested.
-
+### N8N Workflow 
+<img width="618" height="305" alt="Gmail-Attachment" src="https://github.com/user-attachments/assets/3c5d4d9d-087d-4090-9c48-8739cece1819" />
 
 
 
 
 <img width="667" height="69" alt="Excel-Update" src="https://github.com/user-attachments/assets/c1144da9-979b-4272-afb4-4c2d3b5acdd7" />
-<img width="618" height="305" alt="Gmail-Attachment" src="https://github.com/user-attachments/assets/3c5d4d9d-087d-4090-9c48-8739cece1819" />
