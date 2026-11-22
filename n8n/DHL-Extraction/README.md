@@ -68,3 +68,6 @@ The extraction process will produce the following information:
 7. Four required information fields are extracted.
 8. An LLM confidence score is generated.
 9. Low-confidence results are flagged for manual verification.
+
+<img width="872" height="449" alt="n8n-workflow" src="https://github.com/user-attachments/assets/eb7f3223-1621-4a14-a25a-fd5d642b474f" />
+
