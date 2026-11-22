@@ -2,6 +2,7 @@
 
 ## Process 1: Responsible Person
 **Responsible Person:** Mr. Nafiz Imtiaz
+
 **LinkedIn:** [Mr. Nafiz Imtiaz](https://www.linkedin.com/in/nafiz-imtiaz-mba-aust/)
 
 ## Current Status
