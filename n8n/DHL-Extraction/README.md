@@ -31,6 +31,11 @@ The LLM will analyze the PDF document and extract the following four key informa
 | 3 | Total Challan Amount | Total amount mentioned in the challan |
 | 4 | DHL TDS Amount | Total TDS amount applicable to DHL |
 
+<img width="220" height="208" alt="fuzzy-challan-no" src="https://github.com/user-attachments/assets/a71f1e49-f891-4e43-9fa6-70ff43807f91" />
+<img width="235" height="53" alt="fuzzy-date" src="https://github.com/user-attachments/assets/3900a5bb-feff-4e1d-bdf6-f4bef0960108" />
+<img width="592" height="112" alt="fuzzy-total-amount" src="https://github.com/user-attachments/assets/713361cb-6222-441f-aa42-1321f199b761" />
+<img width="248" height="38" alt="fuzzy-DHL-tds" src="https://github.com/user-attachments/assets/1e9b6e09-9d22-45ed-8733-80188d95ea55" />
+
 ## 4. Document Quality & Confidence Scoring
 
 The PDF document may contain scanned images that are fuzzy, blurry, or unclear. This may affect the accuracy of information extraction.
