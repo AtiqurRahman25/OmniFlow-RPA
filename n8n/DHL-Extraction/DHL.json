@@ -1,0 +1,1560 @@
+{
+  "name": "DHL",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following invoice document and extract all available information.\n\nDocument content:\n{{ $json.text }}\n\nExtract:\n- Invoice number\n- Invoice date\n- Due date\n- Vendor name\n- Customer name\n- Purchase order number\n- Currency\n- Subtotal\n- Tax amount\n- Total amount\n- Bank details\n- All line items\n\nReturn valid JSON only.\nDo not invent missing information.\nUse null for missing fields.",
+        "options": {
+          "systemMessage": "You are an expert AI-powered Invoice and Financial Document Data Extraction Assistant.\n\nYour task is to analyze the provided invoice documents, including:\n\nPDF invoices\nScanned invoices\nJPG, JPEG, and PNG images\nCommercial invoices\nTax invoices\nPurchase invoices\n\nYour primary objective is to accurately extract all available information from the supplied document.\n\n1. Information to Extract\n\nExtract the following fields whenever available:\n\nInvoice Information\n\nInvoice Number\nInvoice Date\nDue Date\nPurchase Order Number\nReference Number\nInvoice Type\n\nVendor Information\n\nVendor Name\nVendor Address\nVendor Email\nVendor Phone\nVendor Tax/VAT Registration Number\n\nCustomer Information\n\nCustomer Name\nCustomer Address\nCustomer Tax/VAT Registration Number\n\nFinancial Information\n\nCurrency\nSubtotal\nDiscount\nTax/VAT Amount\nShipping Charges\nTotal Amount\nAmount Paid\nOutstanding Amount\n\nBank Information\n\nBank Name\nAccount Holder Name\nAccount Number\nIBAN\nSWIFT/BIC Code\n\nInvoice Line Items\n\nItem Description\nItem Code\nQuantity\nUnit Price\nTax Rate\nLine Total\n2. Extraction Rules\nExtract information exactly as it appears in the document.\nNever invent, assume, or fabricate information.\nIf a field is missing, return null.\nPreserve invoice numbers and reference numbers exactly as printed.\nDo not confuse invoice numbers with purchase order numbers.\nPreserve the original currency.\nExtract every visible line item.\nPay attention to scanned images, tables, stamps, and handwritten information.\nIf text is unclear or unreadable, mark it as uncertain rather than guessing.\nDo not calculate missing values unless explicitly requested.\nDistinguish between subtotal, tax amount, and total amount.\nDo not confuse bank account numbers with invoice numbers.\n3. Validation\nCheck whether subtotal, tax, discounts, and total amounts are internally consistent.\nDo not silently modify extracted values.\nReport discrepancies separately.\nNever claim that a document has been verified if it has not.\n4. Output Requirements\n\nReturn the extracted information as valid JSON.\n\nDo not include introductory text, explanations, Markdown formatting, or code fences.\n\nUse null for unavailable fields.\n\nUse an empty array for missing line items.\n\nEnsure the JSON is valid and contains no trailing commas.\n\nYour priority is accuracy, completeness, and faithful extraction of the original document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1040,
+        -960
+      ],
+      "id": "84648419-449e-4f1a-98a6-5c55ccf94d5a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -752
+      ],
+      "id": "94b4f1a8-dcf8-44b6-9b3c-3a51a3e9e3e6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "=D:\\DHL\\Samples\\Samples\\TDS\\Input\\Fuzzy02.pdf",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        560
+      ],
+      "id": "10ce35a4-d709-4e79-af98-5138f8940b82",
+      "name": "Read/Write Files from Disk",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        -960
+      ],
+      "id": "aef226d6-3359-4e4a-a5da-02d51217d375",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.6-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.6 Flash"
+        },
+        "text": "=You are an expert Bangladeshi financial document OCR and data extraction assistant.\n\nYour task is to extract the Date and Total Amount from the attached bank challan.\n\nIMPORTANT: BANGLA TO ENGLISH NUMERAL CONVERSION\n\nUse the following exact numeral mapping:\n\n০ = 0\n১ = 1\n২ = 2\n৩ = 3\n৪ = 4\n৫ = 5\n৬ = 6\n৭ = 7\n৮ = 8\n৯ = 9\n\nSTRICT INSTRUCTIONS:\n\n1. Read the original printed Bangla numerals carefully.\n2. Convert each Bangla digit individually using the mapping above.\n3. Never confuse Bangla ৩ (English 3) with Bangla ৬ (English 6).\n4. Pay special attention to the final digit of the year.\n5. Do not predict, assume, or automatically correct any date.\n6. The document contains repeated copies of the same challan. Cross-check the date and amount across all copies.\n7. Extract the final total amount, not individual transaction amounts.\n8. Preserve decimal values.\n9. Return null if any digit is genuinely unreadable.\n\nOUTPUT FORMAT:\n\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"total_amount\": \"0000000.00\"\n}\n\nReturn valid JSON only. No explanations or Markdown.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        -768
+      ],
+      "id": "2bc2b3ed-9891-4f0a-8559-9e227856308a",
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.6-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.6 Flash"
+        },
+        "text": "Your ONLY task is to identify the printed date on this Bangladeshi bank challan.\n\nIMPORTANT:\n- The document contains three repeated copies of the same challan.\n- Inspect the date printed on each copy.\n- The date is written using Bangla numerals.\n- Carefully distinguish the Bangla digits ৩ and ৬.\n- Do not assume or predict the year.\n- Compare the three printed dates.\n- Convert the Bangla date DD/MM/YYYY into ISO format YYYY-MM-DD.\n\nReturn only:\n{\n  \"date\": \"YYYY-MM-DD\"\n}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        -944
+      ],
+      "id": "42dcebc9-43d2-4fd6-955d-9403ff7d9ec2",
+      "name": "Analyze document1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/files",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "purpose",
+              "value": "ocr"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        752,
+        -496
+      ],
+      "id": "f407db23-9b3a-420c-9b60-dd26aba542fc",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n6ms7sjWmZacW73e",
+          "name": "Header Auth account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "=https://api.mistral.ai/v1/files/{{ $json.id }}/url",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "expiry",
+              "value": "24"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        976,
+        -496
+      ],
+      "id": "424cdcd2-027a-42d1-bf60-d44f7c3f10c4",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n6ms7sjWmZacW73e",
+          "name": "Header Auth account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"table_format\": \"html\",\n  \"include_image_base64\": true\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "ocr_output.json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1200,
+        -496
+      ],
+      "id": "266143d1-0b79-456d-a2bd-9133e49c9e4d",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "n6ms7sjWmZacW73e",
+          "name": "Header Auth account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash"
+        },
+        "text": "=You are an expert Bangladeshi financial document OCR and data extraction assistant.\n\nYour task is to extract the Date and Total Amount from the attached bank challan.\n\nIMPORTANT: BANGLA TO ENGLISH NUMERAL CONVERSION\n\nUse the following exact numeral mapping:\n\n০ = 0\n১ = 1\n২ = 2\n৩ = 3\n৪ = 4\n৫ = 5\n৬ = 6\n৭ = 7\n৮ = 8\n৯ = 9\n\nSTRICT INSTRUCTIONS:\n\n1. Read the original printed Bangla numerals carefully.\n2. Convert each Bangla digit individually using the mapping above.\n3. Never confuse Bangla ৩ (English 3) with Bangla ৬ (English 6).\n4. Pay special attention to the final digit of the year.\n5. Do not predict, assume, or automatically correct any date.\n6. The document contains repeated copies of the same challan. Cross-check the date and amount across all copies.\n7. Extract the final total amount, not individual transaction amounts.\n8. Preserve decimal values.\n9. Return null if any digit is genuinely unreadable.\n\nOUTPUT FORMAT:\n\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"total_amount\": \"0000000.00\"\n}\n\nReturn valid JSON only. No explanations or Markdown.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1424,
+        -576
+      ],
+      "id": "63054e9b-a51a-430b-a076-7d4e6f126413",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "command": "=python \"D:\\DHL\\Samples\\Samples\\TDS\\bank_DHL.py\" \"D:\\DHL\\Samples\\{{ $binary.attachment_0.fileName }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        992
+      ],
+      "id": "942f2209-5a06-4301-be22-e78c07fcd3ab",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash"
+        },
+        "text": "=# ROLE AND OBJECTIVE\n\nYou are an expert Bangladeshi financial document analysis and data extraction assistant specializing in bank challans, VAT/TDS documents, and DHL financial records.\n\nYour task is to analyze the ORIGINAL PDF document and extract exactly THREE financial fields:\n\n1. Challan Date\n2. Total Challan Amount\n3. DHL TDS Amount\n\nAdditionally, you MUST provide an independent extraction confidence score for each of these three fields.\n\nYou must analyze the original PDF directly. Do not rely on external OCR text, Python OCR, Tesseract, or previously extracted text.\n\nAccuracy is more important than producing a value. Never guess, assume, or fabricate financial information.\n\n---\n\n# SECTION 1: DOCUMENT TYPE IDENTIFICATION\n\nThe PDF may belong to one of three document types.\n\nIdentify the document type from its actual content and structure, not merely from its page count.\n\n## TYPE 01 — DHL TDS TABLE\n\nCharacteristics:\n\n- Usually contains two pages.\n- Page 1 contains the bank challan.\n- Page 2 contains an overleaf TDS deduction table.\n- The table contains company names and corresponding financial amounts.\n- One of the company entries identifies DHL Worldwide Express (Bangladesh) Private Limited.\n\nExtraction rules:\n\n- Challan Date: Extract from Page 1.\n- Total Challan Amount: Extract from Page 1.\n- DHL TDS Amount: Extract from the exact DHL company row on Page 2.\n\n## TYPE 02 — DACR INVOICE TABLE\n\nCharacteristics:\n\n- Usually contains two pages.\n- Page 1 contains the bank challan.\n- Page 2 contains an invoice or deduction table.\n- The table contains an Invoice No. column.\n- Relevant invoice numbers contain the text DACR.\n\nExtraction rules:\n\n- Challan Date: Extract from Page 1.\n- Total Challan Amount: Extract from Page 1.\n- DHL TDS Amount: Calculate by summing the relevant DACR invoice amounts from Page 2.\n\nFor the DACR calculation, use ONLY the column:\n\nDEDUCTION 2% TAX TOTAL (EXCL.VAT) AMOUNT\n\nImportant restrictions:\n\n- Do not use the TOTAL (EXCL.VAT) column.\n- Do not use the TAX 2% column.\n- Do not include invoice rows that do not contain DACR in the Invoice No. field.\n- Do not double-count invoice rows.\n- Do not add the final table total again after summing individual matching rows.\n- If any relevant DACR amount is unreadable, return null rather than producing an incomplete sum.\n\n## TYPE 03 — SINGLE-PAGE DHL CHALLAN\n\nCharacteristics:\n\n- Contains a single-page DHL-specific challan.\n- Does not contain a separate overleaf TDS deduction table.\n- The challan itself represents the DHL-specific tax amount.\n\nExtraction rules:\n\n- Challan Date: Extract from the challan.\n- Total Challan Amount: Extract from the challan.\n- DHL TDS Amount: Use the Total Challan Amount.\n\nDo not apply this rule to TYPE 01 or TYPE 02.\n\n---\n\n# SECTION 2: BANGLA NUMERAL RECOGNITION\n\nThe document may contain Bangla numerals, English numerals, or a combination of both.\n\nYou must correctly recognize and convert Bangla numerals into English digits.\n\nNumeral mapping:\n\n০ = 0\n১ = 1\n২ = 2\n৩ = 3\n৪ = 4\n৫ = 5\n৬ = 6\n৭ = 7\n৮ = 8\n۹ = 9\n\nPay particular attention to visually similar Bangla and English digits.\n\nNever omit, replace, or rearrange digits without visual evidence.\n\nPreserve decimal positions and the complete numerical value.\n\n---\n\n# SECTION 3: CHALLAN DATE EXTRACTION\n\nExtract the Challan Date from Page 1 only.\n\nLocate the field labelled:\n\nতারিখ\n\nor an equivalent date label clearly identifying the challan date.\n\nRules:\n\n1. Read the date directly from the original PDF.\n2. Interpret the date as DD/MM/YYYY unless the document clearly indicates another format.\n3. Convert the date into YYYY-MM-DD format.\n4. Do not use invoice dates.\n5. Do not use tax-period dates.\n6. Do not use document-generation dates.\n7. Do not use dates from Page 2.\n8. Do not infer missing digits or years.\n9. If repeated challan copies are present, compare them and use the clearest consistent reading.\n10. If the date cannot be established reliably, return null.\n\nExample:\n\nDocument date: 12/08/2026\n\nOutput:\n\n\"date\": \"2026-08-12\"\n\n---\n\n# SECTION 4: TOTAL CHALLAN AMOUNT EXTRACTION\n\nExtract the Total Challan Amount from Page 1 only.\n\nLocate the field labelled:\n\nমোট (অংকে)\n\nor an equivalent label identifying the total amount in digits.\n\n## A. Amount in Digits\n\nRead the complete amount directly from the amount-in-digits field.\n\nThe amount may contain:\n\n- Bangla numerals.\n- English numerals.\n- Thousands separators.\n- Decimal points.\n- Two decimal digits.\n\nExample:\n\n২,৭১৮,১০৩.৭৪\n\nMust be converted into:\n\n2718103.74\n\nDo not confuse this amount with:\n\n- Individual transaction amounts.\n- Bank account numbers.\n- TDS amounts.\n- Amounts appearing on Page 2.\n- Other unrelated financial values.\n\n## B. Amount in Words — Mandatory Cross-Verification\n\nIMPORTANT: The total amount in words is printed below the total amount in digits.\n\nYou MUST inspect both representations.\n\nFollow this procedure:\n\n1. First, extract the complete amount from the amount-in-digits field.\n2. Then locate and read the amount-in-words field directly below it.\n3. Interpret the written amount and convert it into its numerical equivalent.\n4. Compare the numerical equivalent of the written amount against the amount extracted from digits.\n5. If both representations agree, use the amount in digits as the final value.\n6. If they disagree, re-examine the original PDF carefully.\n7. Check for visually confusing digits, missing digits, incorrect decimal positions, and incorrect comma grouping.\n8. Do not automatically trust either representation when they disagree.\n9. Never change the digit-based amount simply to force agreement with the written amount.\n10. If the discrepancy cannot be resolved confidently, return null.\n\nThe amount in words is an independent verification source, not a replacement for the amount-in-digits field.\n\n## C. Final Amount Formatting\n\nThe final amount must:\n\n- Contain English digits only.\n- Have no thousands separators or commas.\n- Preserve exactly two decimal places.\n- Not be rounded or truncated.\n- Represent the complete original amount.\n\nExample:\n\nCorrect: \"2718103.74\"\n\nIncorrect: \"2,718,103.74\"\nIncorrect: \"2718103\"\nIncorrect: \"2718103.7\"\n\nIf the amount cannot be reliably established, return null.\n\n---\n\n# SECTION 5: DHL TDS AMOUNT EXTRACTION\n\nThe extraction procedure depends on the identified document type.\n\n## TYPE 01 — DHL TDS TABLE EXTRACTION\n\nExtract the DHL TDS Amount from Page 2 only.\n\nLocate the exact company name:\n\nDHL Worldwide Express (Bangladesh) Private Limited\n\nMinor formatting differences are acceptable only when the company identity is clearly the same.\n\n### Mandatory Row and Column Identification\n\nFollow this exact procedure:\n\n1. Locate the company name DHL Worldwide Express (Bangladesh) Private Limited.\n2. Identify the exact horizontal row containing that company name.\n3. Follow that same horizontal row across the table.\n4. Identify the column labelled TDS Amount.\n5. Read the numerical value at the intersection of the DHL row and the TDS Amount column.\n6. Do not read values from adjacent rows or columns.\n7. Do not use the Base Value column.\n8. Do not use the TDS Rate column.\n9. Do not use another company's TDS amount.\n10. Do not use the overall TDS schedule total.\n\n### Critical Visual Verification\n\nThe DHL TDS Amount must be inspected carefully, digit by digit.\n\nPay special attention to visually similar digits, particularly:\n\n- 1 and 3\n- 4 and 6\n- 6 and 8\n\nDo not automatically interpret an unclear digit based on assumptions or financial expectations.\n\nPerform a second visual examination of the same DHL TDS cell.\n\nDuring the second examination:\n\n1. Read the amount again from the original PDF.\n2. Compare every digit with the first reading.\n3. Verify the integer portion.\n4. Verify the decimal point.\n5. Verify both decimal digits.\n6. Confirm that the value belongs to the correct DHL row and TDS Amount column.\n\nIf the second reading disagrees with the first, inspect the original printed value again.\n\nDo not select a value simply because it appears more reasonable.\n\n### Multiple DHL Entries\n\nIf multiple valid DHL company entries exist:\n\n- Extract each valid DHL TDS Amount.\n- Sum the amounts.\n- Do not include other companies.\n- Do not double-count any entry.\n\nIf the exact DHL amount cannot be established visually, return null.\n\n## TYPE 02 — DACR INVOICE TABLE EXTRACTION\n\nExtract the DHL TDS Amount by summing all valid DACR invoice entries.\n\nFollow these steps:\n\n1. Locate the Invoice No. column.\n2. Identify every row whose Invoice No. contains DACR.\n3. For each matching row, locate the column named DEDUCTION 2% TAX TOTAL (EXCL.VAT) AMOUNT.\n4. Extract the amount from that exact column.\n5. Add all matching amounts.\n6. Verify that no matching row has been skipped or counted twice.\n7. Do not include unrelated invoice rows.\n8. Do not use the overall table total as an additional amount.\n\nIf any required matching amount is unreadable, return null.\n\n## TYPE 03 — SINGLE-PAGE DHL CHALLAN\n\nFor TYPE 03 only:\n\n\"dhl_tds_amount\" must equal the extracted \"total_amount\".\n\n---\n\n# SECTION 6: DISTINGUISH THE THREE FINANCIAL AMOUNTS\n\nYou must distinguish between these three separate financial values:\n\nA. Total Challan Amount:\nThe amount printed in the total amount field on Page 1.\n\nB. DHL-Specific TDS Amount:\nThe amount belonging specifically to DHL in the TDS table or DACR invoice calculation.\n\nC. Overall TDS Schedule Total:\nThe combined total of all companies or entries in the TDS schedule, if present.\n\nThese values are NOT interchangeable.\n\nThe target field \"dhl_tds_amount\" must contain only the DHL-specific TDS amount according to the identified document type.\n\nNever substitute the overall schedule total for the DHL-specific amount.\n\n---\n\n# SECTION 7: EXTRACTION CONFIDENCE SCORING\n\nFor each of the three extracted fields, provide an independent extraction confidence score from 0 to 100.\n\nThe confidence score represents how confident you are that the extracted value is correct based on the actual evidence in the PDF.\n\nEvaluate the following factors:\n\n- Visual clarity and legibility of the printed value.\n- Whether the correct field was identified.\n- Whether the correct row and column were selected.\n- Whether all digits and decimal positions were checked.\n- Whether the amount-in-words cross-verification agrees with the amount in digits, when applicable.\n- Whether repeated copies or corresponding document information support the extracted value.\n- Whether any unresolved visual ambiguity remains.\n\n### Confidence Score Interpretation\n\n95–100: Extremely high confidence.\nThe value is clearly readable and successfully verified.\n\n85–94: High confidence.\nThe value is readable with minimal uncertainty.\n\n70–84: Good confidence.\nThe value is reasonably clear, but minor ambiguity remains.\n\n50–69: Moderate confidence.\nThere is noticeable uncertainty in reading or identifying the field.\n\n25–49: Low confidence.\nThere is substantial ambiguity.\n\n0–24: Very low confidence.\nThe value cannot be reliably established.\n\n### Strict Confidence Rules\n\n1. Calculate confidence independently for date, total_amount, and dhl_tds_amount.\n2. Do not automatically assign 100 to any field.\n3. Do not assign identical scores to every field without evaluating them independently.\n4. Do not increase confidence merely because a value appears financially reasonable.\n5. Agreement between amount in digits and amount in words should increase confidence in total_amount.\n6. For dhl_tds_amount, confidence must reflect whether the exact DHL row and TDS Amount column were correctly identified and visually verified.\n7. If a field is returned as null, its confidence must be below 50.\n8. These scores are qualitative model assessments, not statistically calibrated probabilities.\n9. Do not describe a confidence score as a guaranteed probability of correctness.\n\n---\n\n# SECTION 8: FINAL VALIDATION\n\nBefore producing the final JSON, perform these checks:\n\n1. Confirm that the document type was correctly identified.\n2. Confirm that the Challan Date came from the correct Page 1 field.\n3. Confirm that the Total Challan Amount came from the correct Page 1 field.\n4. Confirm that the amount in digits was cross-checked against the amount in words.\n5. Confirm that the DHL TDS Amount was extracted using the correct document-type procedure.\n6. Confirm that the DHL-specific TDS amount was not confused with the overall TDS schedule total.\n7. Confirm that all amounts have exactly two decimal places.\n8. Confirm that amount strings contain no thousands separators.\n9. Confirm that all three confidence scores are present.\n10. Confirm that every confidence score is a numerical JSON value between 0 and 100.\n11. Confirm that no unsupported or assumed values were introduced.\n\nIf any field cannot be reliably established, return null for that field and assign a confidence score below 50.\n\n---\n\n# SECTION 9: MANDATORY JSON OUTPUT FORMAT\n\nYou MUST return exactly the following JSON structure:\n\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"total_amount\": \"0000000.00\",\n  \"dhl_tds_amount\": \"0000000.00\",\n  \"confidence_scores\": {\n    \"date\": 95,\n    \"total_amount\": 95,\n    \"dhl_tds_amount\": 95\n  }\n}\n\n### Mandatory Output Requirements\n\n1. Always include all four top-level keys:\n   - date\n   - total_amount\n   - dhl_tds_amount\n   - confidence_scores\n\n2. The confidence_scores object MUST contain exactly these three keys:\n   - date\n   - total_amount\n   - dhl_tds_amount\n\n3. Confidence scores must be JSON numbers, not strings.\n\n4. Amounts must be strings containing exactly two decimal places, without commas.\n\n5. If a field cannot be reliably extracted, use JSON null, not the string \"null\".\n\n6. Never omit confidence_scores or any of its three fields.\n\n7. Never return additional keys.\n\n8. Do not return document type, explanations, comments, or extraction notes.\n\n9. Do not return Markdown code fences.\n\n10. Return valid JSON only.\n\n### FINAL INSTRUCTION\n\nThe confidence_scores object is mandatory.\n\nA response containing only date, total_amount, and dhl_tds_amount is incomplete and invalid.\n\nBefore responding, verify that the complete JSON structure is present and valid.",
+        "inputType": "binary",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        784
+      ],
+      "id": "f56c9074-a383-4814-89f7-013ff6bd1d79",
+      "name": "Analyze Document - Entire Pdf",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YJx2jdS8BmcdFsQj",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.6-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.6 Flash"
+        },
+        "text": "=You are a highly accurate Bangladeshi bank challan document verification assistant.\n\nYour ONLY task is to read and verify the challan number from Page 1 of the attached PDF.\n\nIMPORTANT INSTRUCTIONS:\n\n1. Locate the field labelled \"চালান নং\".\n2. Read the challan number directly from the original document image.\n3. The challan number may appear in multiple copies:\n   - Bank Copy\n   - Customer Copy\n   - Office Copy\n\n4. Extract the number from each copy independently.\n\n5. Convert Bangla digits into English digits individually:\n\n০=0, ১=1, ২=2, ৩=3, ৪=4, ৫=5, ৬=6, ৭=7, ৮=8, ৯=9.\n\n6. Compare all extracted copies digit by digit.\n7. Do not assume that repeated copies contain identical numbers without checking them.\n8. Never guess an unclear digit.\n9. The expected format is XXXX-XXXXXXXXXXX.\n10. If a digit is unclear or the copies disagree, return null for the final verified number.\n\nOUTPUT JSON ONLY:\n\n{\n  \"bank_copy\": \"XXXX-XXXXXXXXXXX\",\n  \"customer_copy\": \"XXXX-XXXXXXXXXXX\",\n  \"office_copy\": \"XXXX-XXXXXXXXXXX\",\n  \"verified_challan_no\": \"XXXX-XXXXXXXXXXX\",\n  \"verification_status\": \"MATCHED\"\n}\n\nIf a copy is missing or unreadable, return null for that copy.\n\nSet verification_status to \"MATCHED\" only when all readable copies agree exactly. Otherwise, set it to \"REVIEW_REQUIRED\".\n\nDo not use information from external sources or assume the expected challan number.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        -576
+      ],
+      "id": "71077342-0429-4755-8c1e-998e0912f477",
+      "name": "Validate Challan No.",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        144,
+        800
+      ],
+      "id": "568577d7-73d5-4c3f-b98a-7406d8a3f56b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.first().json.stdout;\n\n// Use regex to find the English Challan No line\nconst match = stdout.match(/Translated English Challan No:\\s*([0-9\\-]+)/);\nconst englishChallanNo = match ? match[1].trim() : null;\n\nreturn {\n  json: {\n    english_challan_no: englishChallanNo\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        992
+      ],
+      "id": "3eea52ef-4660-4b5e-b92d-e97d81952fd3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "content": "## Other Methods Applied So Far",
+        "height": 752,
+        "width": 1216,
+        "color": "#007EBD"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -1040
+      ],
+      "typeVersion": 1,
+      "id": "cd5867a3-2266-4d63-9cce-7cb1f0b6d8f5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Deals\nChallan Amount, \nDate, \nTDS-Amount",
+        "height": 192,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        768
+      ],
+      "typeVersion": 1,
+      "id": "d2892b03-0028-4bc0-ab7c-f53748672693",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Deals\nChallan No.",
+        "width": 304,
+        "color": "#11008F"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        976
+      ],
+      "typeVersion": 1,
+      "id": "059f1ab1-f884-40e3-81e0-a18d4885aa35",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Creates Payload",
+        "height": 176,
+        "width": 192,
+        "color": "#088000"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        960
+      ],
+      "typeVersion": 1,
+      "id": "9bd3d1f4-2034-49f5-8661-b70fe45fff93",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### Created By : \nMd. Atiqur Rahman Sifat\nExplicitly for - Attached Overleaf ",
+        "height": 80,
+        "width": 304,
+        "color": "#16FEFA"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "7f5ab452-dbe8-4f08-8ef2-0bab1bd9c610",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "fileSelector": "D:\\DHL\\Samples\\Samples\\TDS\\Input\\type03.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        2192,
+        624
+      ],
+      "id": "3dbdd203-136e-4e32-8997-24544f6b2af9",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "command": "python \"D:\\DHL\\Samples\\Samples\\TDS\\bank_ocr.py\" \"D:\\DHL\\Samples\\Samples\\TDS\\Input\\type03.pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        1056
+      ],
+      "id": "1bfd7035-b289-4000-8fc7-62c5a66fdc3c",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash"
+        },
+        "text": "=You are an expert Bangladeshi financial document OCR and data extraction assistant.\n\nYour task is to extract THREE financial fields from the attached PDF:\n\n1. Challan Date\n2. Total Challan Amount\n3. DHL TDS Amount\n\n========================================\nDOCUMENT STRUCTURE — TYPE 03\n========================================\n\n- The PDF contains one page.\n- Page 1 contains repeated copies of the same bank challan:\n  - Bank Copy\n  - Customer Copy\n  - Office Copy\n- There is NO second page.\n- There is NO overleaf or separate TDS deduction table.\n- The challan contains the company name:\n\nDHL WORLDWIDE EXPRESS (BANGLADESH) PRIVATE LIMITED\n\nThe DHL company name appears directly on Page 1.\n\nIMPORTANT:\nThe Challan Number is extracted separately using Python Tesseract OCR.\n\nDO NOT extract, verify, reconstruct or return the Challan Number.\n\n========================================\n1. BANGLA TO ENGLISH NUMERAL CONVERSION\n========================================\n\nConvert Bangla numerals into English numerals digit by digit.\n\n০ = 0\n১ = 1\n২ = 2\n৩ = 3\n৪ = 4\n৫ = 5\n৬ = 6\n৭ = 7\n৮ = 8\n৯ = 9\n\nSTRICT INSTRUCTIONS:\n\n- Read the original printed Bangla numerals carefully.\n- Never confuse Bangla ৩ with ৬.\n- Pay special attention to the final digit of the year.\n- Never predict or assume unreadable digits.\n- Verify extracted values against the original document.\n\n========================================\n2. CHALLAN DATE — PAGE 1\n========================================\n\nExtract the actual challan date from the Bank Copy on Page 1.\n\nInstructions:\n\n- Locate the field labelled \"তারিখ\".\n- Read the date directly from the original challan.\n- Convert Bangla numerals into English numerals.\n- Interpret the printed date as DD/MM/YYYY.\n- Return the date in YYYY-MM-DD format.\n- Ignore the PDF creation timestamp or any other unrelated date.\n- Cross-check the date against the repeated copies when available.\n- Pay special attention to the four-digit year.\n- Never automatically correct an unclear digit.\n- If the date cannot be read confidently, return null.\n\n========================================\n3. TOTAL CHALLAN AMOUNT — PAGE 1\n========================================\n\nExtract the final total challan amount from the Bank Copy.\n\nInstructions:\n\n- Locate the field labelled \"মোট (অংকে)\".\n- Extract the final total amount deposited through the challan.\n- Do not extract individual transaction amounts or unrelated figures.\n- Convert Bangla numerals into English numerals.\n- Preserve decimal values.\n- Return the amount as a numeric string with exactly two decimal places.\n- Cross-check against the repeated copies if available.\n- If the amount is unreadable, return null.\n\n========================================\n4. DHL TDS AMOUNT — TYPE 03 BUSINESS RULE\n========================================\n\nIMPORTANT BUSINESS RULE:\n\nFor Type 03, the DHL company is explicitly identified on Page 1 of the challan.\n\nThere is no separate overleaf or TDS deduction table.\n\nTherefore:\n\nDHL TDS Amount = Total Challan Amount\n\nInstructions:\n\n1. Confirm that the document identifies DHL WORLDWIDE EXPRESS (BANGLADESH) PRIVATE LIMITED in the relevant company/party field.\n2. Extract the Total Challan Amount from the field labelled \"মোট (অংকে)\".\n3. Assign the same verified amount to dhl_tds_amount.\n4. Do not search for a second page or an overleaf.\n5. Do not calculate a separate TDS amount.\n6. Do not use any unrelated amount appearing elsewhere in the document.\n7. If the DHL company identification is missing or unclear, return null for dhl_tds_amount.\n8. If total_amount is null, dhl_tds_amount must also be null.\n\n========================================\n5. FINAL VALIDATION\n========================================\n\nBefore returning the result, verify:\n\n1. Challan Date comes exclusively from the \"তারিখ\" field on Page 1.\n2. Total Challan Amount comes exclusively from \"মোট (অংকে)\" on Page 1.\n3. The correct DHL company name is present.\n4. dhl_tds_amount is exactly equal to total_amount.\n5. Bangla numerals have been converted correctly.\n6. The year has been visually rechecked.\n7. No value has been guessed or assumed.\n\n========================================\n6. OUTPUT FORMAT\n========================================\n\nReturn valid JSON only.\n\nDo not include explanations, Markdown, comments or additional text.\n\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"total_amount\": \"0000000.00\",\n  \"dhl_tds_amount\": \"0000000.00\"\n}\n\nAll three fields must be present.\n\nUse null for any field that cannot be extracted confidently.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        2160,
+        848
+      ],
+      "id": "0fb162e3-b5cb-4ba4-bb5d-78700dec33ed",
+      "name": "Analyze Document - Entire Pdf1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2592,
+        864
+      ],
+      "id": "8e77e6f3-af8a-42b4-acdb-14c3f8abda35",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = JSON.parse($input.first().json.stdout);\n\nreturn {\n  json: result\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        1056
+      ],
+      "id": "bf3451ac-cae3-46cf-90cb-9d725be4effe",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "content": "### Deals\nChallan Amount, \nDate, \nTDS-Amount",
+        "height": 192,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1984,
+        832
+      ],
+      "typeVersion": 1,
+      "id": "fe56392f-b3b2-43bf-ae79-76102b1bb31b",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Deals\nChallan No.",
+        "width": 304,
+        "color": "#11008F"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1984,
+        1040
+      ],
+      "typeVersion": 1,
+      "id": "9a09d09e-9000-4173-a812-d5410e1b35db",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "Creates Payload",
+        "height": 176,
+        "width": 192,
+        "color": "#088000"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        1024
+      ],
+      "typeVersion": 1,
+      "id": "53979939-0648-4eda-9fb1-bcf3b09840a0",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "### Created By : \nMd. Atiqur Rahman Sifat\nExplicitly for - Attached Overleaf (type03)",
+        "height": 80,
+        "width": 304,
+        "color": "#16FEFA"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2480,
+        624
+      ],
+      "typeVersion": 1,
+      "id": "840b8d47-20ae-44db-89dc-9bbf8daf5d85",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=You are a financial data recording assistant for DHL Bangladesh's TDS challan automation workflow.\n\nYour task is to store extracted TDS challan information in the connected Google Sheets spreadsheet.\n\nYou will receive four fields:\n\n1. challan_no\n2. date\n3. total_amount\n4. dhl_tds_amount\n\nSTRICT INSTRUCTIONS:\n\n1. Read the four fields from the incoming JSON data.\n2. Do not invent, guess, modify, or independently calculate any financial values.\n3. Preserve the challan number exactly as received.\n4. Preserve the date in YYYY-MM-DD format.\n5. Preserve both financial amounts exactly as received, including two decimal places.\n6. Do not interchange total_amount and dhl_tds_amount.\n7. Do not create additional fields or columns.\n8. Do not store document type, extraction status, raw OCR text, or any other metadata.\n9. If any required field is missing, null, or invalid, do not append a row. Report that the record requires manual review.\n10. If all four fields are valid, use the connected Google Sheets tool to append exactly one new row to the TDS_Master worksheet.\n11. Do not claim that a record was saved unless the Google Sheets tool confirms success.\n\nAfter completing the operation, return a concise confirmation or an error message."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1536,
+        -1008
+      ],
+      "id": "600dd9ab-9445-471d-b1e4-21ff3d1c45cd",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.6-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        -800
+      ],
+      "id": "7c3aa87c-12cc-4c09-acd9-7187a6a0dcb9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1680,
+        -704
+      ],
+      "id": "97c86941-f55b-4def-8ca9-d902b46a92a4",
+      "name": "Get row(s) in sheet in Google Sheets"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "D:\\DHL\\Samples\\Samples\\TDS\\Output\\DHL-MasterTable.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        800
+      ],
+      "id": "4b03399c-46bb-4872-979b-f0e825125ac0",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.first().json;\n\n// 1. Unify and search text from any possible input structure\nlet text = \"\";\nif (inputItem.text) {\n    text = inputItem.text;\n} else if (inputItem.parts && Array.isArray(inputItem.parts)) {\n    text = inputItem.parts.map(p => p.text || \"\").join(\"\\n\");\n} else {\n    text = JSON.stringify(inputItem);\n}\n\n// 2. Extract English Challan No\nlet englishChallanNo = inputItem.english_challan_no || null;\nif (!englishChallanNo) {\n    const challanMatch = text.match(/Translated English Challan No:\\s*([0-9\\-]+)/i);\n    englishChallanNo = challanMatch ? challanMatch[1].trim() : null;\n}\n\n// 3. Extract Date (Checks JSON keys, standard text labels, and DD/MM/YYYY formats)\nconst dateMatch = \n    text.match(/\"date\"\\s*:\\s*\"([^\"]+)\"/i) || \n    text.match(/date\\s*[:=]\\s*[\"']?([^\"'\\n\\r]+)[\"']?/i) ||\n    text.match(/তারিখ\\s*[:\\s]*([0-9\\/]{8,10})/i) ||\n    text.match(/\\b([0-9]{4}-[0-9]{2}-[0-9]{2})\\b/);\n\nconst date = dateMatch ? dateMatch[1].trim() : null;\n\n// 4. Extract TDS Amount\nconst tdsMatch = text.match(/\"dhl_tds_amount\"\\s*:\\s*\"([^\"]+)\"/i) || text.match(/TDS[^0-9]*([0-9,]+\\.[0-9]{2})/i);\nconst tdsAmount = tdsMatch ? tdsMatch[1].trim() : null;\n\n// 5. Extract Total Amount\nconst totalMatch = text.match(/\"total_amount\"\\s*:\\s*\"([^\"]+)\"/i) || text.match(/Total[^0-9]*([0-9,]+\\.[0-9]{2})/i);\nconst totalAmount = totalMatch ? totalMatch[1].trim() : null;\n\nreturn {\n  json: {\n    english_challan_no: englishChallanNo,\n    date: date,\n    dhl_tds_amount: tdsAmount,\n    total_amount: totalAmount\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        992
+      ],
+      "id": "dba0e11a-4bbe-4d37-96d2-87a75ad891f2",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "fileSelector": "D:\\DHL\\Samples\\Samples\\TDS\\Output\\DHL-MasterTable.xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        992
+      ],
+      "id": "a32d0c62-6370-4218-ae54-2596b207b0b2",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        800
+      ],
+      "id": "13f36cf0-93f8-41e7-a584-a1730996c58d",
+      "name": "Extract from File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const existingRows = $input.all()\n  .map(item => item.json)\n  .filter(row =>\n    Object.values(row).some(\n      value => value !== null &&\n               value !== undefined &&\n               String(value).trim() !== \"\"\n    )\n  );\n\n// Get the newly extracted challan record\nconst newRecord = $('Code in JavaScript2').first().json;\n\n// Combine existing records with the new record\nconst allRecords = [...existingRows, newRecord];\n\n// Keep exactly five Excel columns (checking both challan field name variants)\nreturn allRecords.map(row => ({\n  json: {\n    challan_no: row.challan_no || row.english_challan_no || \"\",\n    date: row.date || \"\",\n    total_amount: row.total_amount || \"\",\n    dhl_tds_amount: row.dhl_tds_amount || \"\",\n    confidence_level: row.confidence_level ?? \"\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        800
+      ],
+      "id": "77af7419-7d4f-4166-91d3-0ce24c8aebc5",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        800
+      ],
+      "id": "e506aa1a-d19e-4bf6-8574-62639b15f192",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "D:\\DHL\\Samples\\Samples\\TDS\\Input\\type02.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        3440,
+        608
+      ],
+      "id": "19a4b2c7-315f-456c-b7af-3b5995042d49",
+      "name": "Read/Write Files from Disk4"
+    },
+    {
+      "parameters": {
+        "command": "python \"D:\\DHL\\Samples\\Samples\\TDS\\bank_ocr.py\" \"D:\\DHL\\Samples\\Samples\\TDS\\Input\\type02.pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3408,
+        1040
+      ],
+      "id": "3f4c229e-551c-43f0-8ce0-ed5133d5613f",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash Lite"
+        },
+        "text": "=Analyze the entire PDF document carefully.\n\nThis is a Type 02 TDS challan document.\n\nExtract the following three fields:\n\n1. date\n   - Read the challan date from Page 1.\n   - Convert Bengali digits into English digits.\n   - Return the date in YYYY-MM-DD format.\n\n2. total_amount\n   - Read the total challan amount from Page 1.\n   - Look for the field \"মোট (অংকে)\".\n   - Return the exact amount as a numeric string.\n   - Do not confuse it with other amounts on the document.\n\n3. dhl_tds_amount\n   - Go to Page 2 (the overleaf invoice table).\n   - Find every row where the Invoice No. contains the keyword \"DACR\".\n   - From each matching row, extract the value under:\n     \"DEDUCTION 2% TAX TOTAL (EXCL.VAT) AMOUNT\".\n   - Add together all the extracted values from DACR rows.\n   - Do not include rows that do not contain DACR.\n   - Do not include the final table total separately, as this could cause double counting.\n   - Store the calculated sum in dhl_tds_amount.\n\nIMPORTANT:\n- Do not extract or return the challan number. Python handles that separately.\n- Do not use the TOTAL (EXCL. VAT) column for the DACR calculation.\n- Do not guess missing or unclear values.\n- If any required value cannot be identified confidently, return null for that field.\n- Convert Bengali numerals into English numerals.\n- Preserve decimal precision to two places.\n\nReturn ONLY valid JSON in this exact format:\n\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"total_amount\": \"0.00\",\n  \"dhl_tds_amount\": \"0.00\"\n}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        3408,
+        832
+      ],
+      "id": "536c2cde-cb77-4d3a-9af2-5a56c8f3a3be",
+      "name": "Analyze Document - Entire Pdf2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3840,
+        848
+      ],
+      "id": "51acc53d-9271-410b-b24d-1d13ead69259",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = JSON.parse($input.first().json.stdout);\n\nreturn {\n  json: result\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3632,
+        1040
+      ],
+      "id": "4cd09c2a-d2d2-41ae-a194-014e2c0a05a0",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "content": "### Deals\nChallan Amount, \nDate, \nTDS-Amount",
+        "height": 192,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3232,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "725c6dd8-5094-4d89-8aa4-a7191631c8cc",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Deals\nChallan No.",
+        "width": 304,
+        "color": "#11008F"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3232,
+        1024
+      ],
+      "typeVersion": 1,
+      "id": "6913862f-7c72-4be5-bd8a-927d6a66f9b6",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "Creates Payload",
+        "height": 176,
+        "width": 192,
+        "color": "#088000"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3584,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "9105508f-2f09-4c49-a3cd-e093f3ae18eb",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "### Created By : \nMd. Atiqur Rahman Sifat\nExplicitly for - Attached Overleaf (type02)",
+        "height": 80,
+        "width": 304,
+        "color": "#16FEFA"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3728,
+        608
+      ],
+      "typeVersion": 1,
+      "id": "33114751-63ed-4dd5-8083-275ce27542bb",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=D:\\DHL\\Samples\\Samples\\TDS\\003_Aristopharma challan _02_'TDS_15.06.2026.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        16
+      ],
+      "id": "d5a553ab-f3ff-4ca2-99fe-5e15da293eb7",
+      "name": "Read/Write Files from Disk5"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash Lite"
+        },
+        "text": "=You are a precise document layout analyzer. Analyze the attached e-challan PDF document.\nLocate the first instance of the \"চালান নং\" (Challan No) value area on the page.\n\nReturn your response strictly as a single JSON object containing only the bounding box coordinates (as percentages from 0 to 100) of that challan number value area. Do not include markdown code blocks, arrays, or extra text.\n\nExample format:\n{\n  \"ymin\": 133,\n  \"xmin\": 617,\n  \"ymax\": 145,\n  \"xmax\": 716\n}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        2112,
+        224
+      ],
+      "id": "1ccdacbf-a9dc-45bb-8d7a-076c3f7f6a52",
+      "name": "Analyze Document - Entire Pdf3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AxwV3vNZr8SREWOJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=python \"D:\\DHL\\python-test\\check.py\"  \"D:\\DHL\\Samples\\Samples\\TDS\\003_Aristopharma challan _02_'TDS_15.06.2026.pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        224
+      ],
+      "id": "2bffc119-1ea3-4e80-887f-33871a679e1c",
+      "name": "Execute Command3"
+    },
+    {
+      "parameters": {
+        "height": 512,
+        "width": 832,
+        "color": "#848D07"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1936,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "0c7dda8f-937a-4acc-b748-e7cbbf506e72",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "includeDrafts": false,
+          "q": "subject:\"DHL\" is:unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -800,
+        512
+      ],
+      "id": "62d96a4e-d1cc-4890-a962-d14479d0cac8",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2rxmaIgjw1cnUOIp",
+          "name": "Gmail account 4"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "76ea4956-995d-46b5-83a7-7541091952e3",
+              "leftValue": "={{ Object.keys($binary || {}).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        48,
+        352
+      ],
+      "id": "232e0c37-4328-4f87-abeb-8a82028eec4d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=D:\\DHL\\samples\\{{ $binary.attachment_0.fileName }}",
+        "dataPropertyName": "=attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        336
+      ],
+      "id": "0d39d109-06cc-42e3-a4f6-36f557382afd",
+      "name": "Read/Write Files from Disk6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "35ab10b9-35cb-434b-ac78-cc44e89adeeb",
+              "leftValue": "={{ $json.hasAttachments }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        -128,
+        192
+      ],
+      "id": "64d1e312-d81e-42cd-bec4-16a1d310e9a6",
+      "name": "Filter",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        192
+      ],
+      "id": "54cf8753-ed7d-4807-936e-8d5bbb83df65",
+      "name": "Get a message",
+      "webhookId": "aae4201b-4dde-4275-b0ba-665a6e699336",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2rxmaIgjw1cnUOIp",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -592,
+        288
+      ],
+      "id": "028e8b7d-3c84-468a-b7b3-5e1b159701e2",
+      "name": "Mark a message as read",
+      "webhookId": "d4993ae3-e773-4a2c-9573-5b8f8264fbfd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2rxmaIgjw1cnUOIp",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.5 Flash"
+        },
+        "text": "=Role: PDF Data Extraction and Self-Confidence Assessment Agent\n\nYou are an expert PDF data extraction AI agent. Your task is to extract exactly four specific fields from a PDF document and evaluate your confidence in the accuracy of each extracted value.\n\nThe PDF may contain information in Bangla (বাংলা), English, or a combination of both.\n\nYour priority is accurate extraction, especially when dealing with long numerical identifiers such as Challan Numbers.\n\n1. Required Fields\n\nExtract ONLY the following four fields:\n\nchallan_no – Challan Number.\ndhl_tds_amount – DHL TDS Amount.\ndate – Challan Date.\ntotal_amount – Total Amount.\n\nDo not extract any other information.\n\n2. Language and Number Recognition\n\nThe PDF may contain Bangla text, English text, Bangla numerals, or English numerals.\n\nYou must:\n\nRecognize Bangla and English text.\nRecognize Bangla numerals and convert them into English numerals.\nPreserve the original meaning of extracted information.\nCarefully distinguish between similar-looking digits.\nPay special attention to numerical sequences and dates.\nNever guess a digit that is unclear or unreadable.\n\nBangla numeral conversion reference:\n\n০ = 0 ১ = 1 ২ = 2 ৩ = 3 ৪ = 4 ৫ = 5 ৬ = 6 ৭ = 7 ৮ = 8 ৯ = 9\n\n3. Extraction Instructions\nA. Challan Number (challan_no)\nIdentify the exact Challan Number from the PDF.\nIt may be written in Bangla or English.\nPreserve all digits in their original sequence.\nPreserve meaningful prefixes and suffixes.\nPreserve separators such as hyphens if they are present.\nNever add, remove, rearrange, or assume digits.\nCarefully examine every digit individually.\nDo not confuse the Challan Number with transaction IDs, reference numbers, or other identifiers.\n\nIMPORTANT: Challan Number extraction requires the highest level of attention.\n\nA single incorrect digit makes the entire Challan Number incorrect.\n\nNever assign a high confidence score simply because the extracted number looks structurally valid.\n\nB. DHL TDS Amount (dhl_tds_amount)\nIdentify the DHL TDS amount.\nIt may be written in Bangla or English.\nExtract the exact numerical amount.\nConvert Bangla numerals into English numerals.\nDo not confuse DHL TDS with other tax amounts, VAT, fees, or deductions.\nC. Date (date)\nIdentify the correct Challan Date.\nIt may be written in Bangla or English.\nConvert Bangla numerals into English numerals.\nReturn the date in DD/MM/YYYY format.\nDo not confuse the Challan Date with payment dates, processing dates, or other dates in the document.\nIf the date is incomplete or ambiguous, lower the confidence score.\nD. Total Amount (total_amount)\nIdentify the actual Total Amount.\nIt may be written in Bangla or English.\nConvert Bangla numerals into English numerals.\nPreserve the numerical value.\nCommas may be used as thousand separators.\nDo not confuse Total Amount with TDS Amount, VAT, fees, or other individual amounts.\n4. Self-Confidence Assessment\n\nAfter extracting each field, independently evaluate how confident you are that you correctly interpreted the information from the PDF.\n\nAssign a confidence score between 0 and 100 for each field.\n\nUse these guidelines:\n\n90–100: Very high confidence\n\nInformation is clearly visible.\nAll digits and characters are distinguishable.\nNo meaningful ambiguity exists.\n\n75–89: High confidence\n\nInformation is mostly clear.\nMinor uncertainty exists, but the interpretation is strong.\n\n50–74: Moderate confidence\n\nSome characters or digits are difficult to distinguish.\nInterpretation required some assumptions.\n\n25–49: Low confidence\n\nInformation is partially unclear.\nMultiple possible interpretations exist.\n\n0–24: Very low confidence\n\nInformation is unreadable, missing, or highly ambiguous.\n5. Strict Confidence Rules\n\nFollow these rules carefully:\n\nNever automatically assign 95–100 confidence to extracted information.\nNever confuse a plausible-looking value with a correctly extracted value.\nEvaluate every digit and character individually.\nFor Challan Numbers, even one uncertain digit should significantly reduce confidence.\nIf OCR quality is poor, reduce confidence accordingly.\nIf Bangla numerals are difficult to interpret, reflect that uncertainty.\nIf multiple similar values appear in the document, ensure that the correct field has been identified.\nIf you cannot confidently identify a complete value, return null rather than guessing.\nDo not increase confidence simply because the extracted value follows an expected format.\nYour confidence must reflect your own certainty about the extraction, not independently verified factual accuracy.\n6. Missing or Unreadable Information\n\nIf a field cannot be found or interpreted:\n\nReturn null as its value.\nAssign a confidence score of 0.\nDo not invent or reconstruct missing information.\n7. Output Format\n\nReturn ONLY valid JSON.\n\nDo not include Markdown code fences, explanations, comments, or additional text.\n\nUse exactly this JSON structure:\n\n{ \"challan_no\": { \"value\": \"2526-00578700391\", \"confidence\": 85 }, \"dhl_tds_amount\": { \"value\": \"206\", \"confidence\": 95 }, \"date\": { \"value\": \"15/06/2026\", \"confidence\": 95 }, \"total_amount\": { \"value\": \"123,406\", \"confidence\": 98 } }\n\nThe values above are examples of the required output structure, not predefined answers.\n\n8. Final Instructions\nReturn exactly four fields.\nDo not add extra fields.\nEvery field must contain value and confidence.\nConfidence must be an integer between 0 and 100.\nReturn null for missing or unreadable values.\nNever fabricate information.\nPrioritize accurate extraction over high confidence scores.\nReturn valid JSON only.",
+        "inputType": "binary",
+        "binaryPropertyName": "attachment_0",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        784
+      ],
+      "id": "23b3a2d0-2e6c-457f-987f-bc2898b9c73a",
+      "name": "Analyze Document - Entire Pdf4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YJx2jdS8BmcdFsQj",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "id": "2d278b88-a71b-48d1-ad29-bbff957a7957",
+          "object": "file",
+          "bytes": 69203,
+          "created_at": 1794205186,
+          "filename": "Bank Sample 2.pdf",
+          "purpose": "ocr",
+          "sample_type": "ocr_input",
+          "num_lines": 0,
+          "mimetype": "application/pdf",
+          "source": "upload",
+          "signature": "ec9ba1012718b689a2d8cc021244e436",
+          "expires_at": null,
+          "visibility": "workspace"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Analyze Document - Entire Pdf",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze Document - Entire Pdf4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Document - Entire Pdf": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Challan No.": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "Analyze Document - Entire Pdf1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Document - Entire Pdf1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk4": {
+      "main": [
+        [
+          {
+            "node": "Analyze Document - Entire Pdf2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Document - Entire Pdf2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk5": {
+      "main": [
+        [
+          {
+            "node": "Analyze Document - Entire Pdf3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Document - Entire Pdf3": {
+      "main": [
+        [
+          {
+            "node": "Execute Command3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk6": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as read": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5085b1e0-a785-44c2-a9ad-230b22704430",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d48cdbf5fc6683b824f87e10d32d2e80c4234d288f6b184480f16c15aba68ced"
+  },
+  "nodeGroups": [],
+  "id": "AIUnY3ncBMrVGsDt",
+  "tags": []
+}
