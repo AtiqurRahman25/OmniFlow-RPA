@@ -75,4 +75,7 @@ The extraction process will produce the following information:
 9. Low-confidence results are flagged for manual verification.
 
 <img width="872" height="449" alt="n8n-workflow" src="https://github.com/user-attachments/assets/eb7f3223-1621-4a14-a25a-fd5d642b474f" />
+<img width="414" height="129" alt="ExecutionTime" src="https://github.com/user-attachments/assets/4af3f077-717c-400f-a73c-54a5bcbb6baf" />
+<img width="368" height="157" alt="Output" src="https://github.com/user-attachments/assets/4760590b-881c-4a8e-a036-bc584d88859f" />
+
 
